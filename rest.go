@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -54,6 +55,8 @@ func (client *Rest) Post(payload interface{}) *Rest {
 func (client *Rest) Path(param string) *Rest {
 	if client.baseurl == "" {
 		panic("BASE URL Not Present")
+	} else if strings.Contains(param, "/") {
+		panic("Incorrect PATH Param")
 	}
 	client.uriparams = append(client.uriparams, param)
 	return client
@@ -94,12 +97,14 @@ func (client *Rest) Query(options ...interface{}) *Rest {
 
 func (client *Rest) Request() (*http.Request, error) {
 	//Add all URI params to baseurl
-	client.url = client.baseurl
-	for _, param := range client.uriparams {
-		client.url = client.url + param
+	if !strings.HasSuffix(client.baseurl, "/") {
+		client.baseurl = client.baseurl + "/"
 	}
-	v, err := url.Parse(client.url)
 
+	client.url = client.baseurl
+	params := strings.Join(client.uriparams, "/")
+	client.url = client.baseurl + params
+	v, err := url.Parse(client.url)
 	if err != nil {
 		panic("Complete URL is not correct")
 	}
