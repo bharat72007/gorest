@@ -185,5 +185,35 @@ func (client *Rest) Send(req *http.Request, successM, failureM interface{}) (*ht
 	if err != nil {
 		panic("Send request Failed")
 	}
+	defer response.Body.Close()
+	if successM != nil || failureM != nil {
+		err = decodeResponseJSON(response, successM, failureM)
+	}
+
 	return response, err
+}
+
+func (client *Rest) Receive(successM, failureM interface{}) (*http.Response, error) {
+	req, err := client.Request()
+	if err != nil {
+		return nil, err
+	}
+	return client.Send(req, successM, failureM)
+}
+
+func decodeResponseJSON(resp *http.Response, successM, failureM interface{}) error {
+	if code := resp.StatusCode; 200 <= code && code <= 299 {
+		if successM != nil {
+			return decodeResponseBodyJSON(resp, successM)
+		}
+	} else {
+		if failureM != nil {
+			return decodeResponseBodyJSON(resp, failureM)
+		}
+	}
+	return nil
+}
+
+func decodeResponseBodyJSON(resp *http.Response, v interface{}) error {
+	return json.NewDecoder(resp.Body).Decode(v)
 }
