@@ -52,6 +52,37 @@ func (client *Rest) Post(payload interface{}) *Rest {
 	return client
 }
 
+func (client *Rest) Put(payload interface{}) *Rest {
+	client.verb = "PUT"
+	if payload != nil {
+		client.addPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Delete() *Rest {
+	client.verb = "DELETE"
+	return client
+}
+
+func (client *Rest) Patch(payload interface{}) *Rest {
+	client.verb = "PATCH"
+	if payload != nil {
+		client.addPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Head() *Rest {
+	client.verb = "HEAD"
+	return client
+}
+
+func (client *Rest) Trace() *Rest {
+	client.verb = "TRACE"
+	return client
+}
+
 func (client *Rest) Path(param string) *Rest {
 	if client.baseurl == "" {
 		panic("BASE URL Not Present")
