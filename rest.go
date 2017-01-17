@@ -60,8 +60,11 @@ func (client *Rest) Put(payload interface{}) *Rest {
 	return client
 }
 
-func (client *Rest) Delete() *Rest {
+func (client *Rest) Delete(payload interface{}) *Rest {
 	client.verb = "DELETE"
+	if payload != nil {
+		client.addPayload(payload)
+	}
 	return client
 }
 
@@ -78,8 +81,16 @@ func (client *Rest) Head() *Rest {
 	return client
 }
 
-func (client *Rest) Option() *Rest {
+func (client *Rest) Option(payload interface{}) *Rest {
 	client.verb = "OPTIONS"
+	if payload != nil {
+		client.addPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Copy() *Rest {
+	client.verb = "COPY"
 	return client
 }
 
