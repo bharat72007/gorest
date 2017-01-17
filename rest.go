@@ -78,8 +78,8 @@ func (client *Rest) Head() *Rest {
 	return client
 }
 
-func (client *Rest) Trace() *Rest {
-	client.verb = "TRACE"
+func (client *Rest) Option() *Rest {
+	client.verb = "OPTIONS"
 	return client
 }
 
