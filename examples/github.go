@@ -19,7 +19,7 @@ func main() {
 	fmt.Println(request)
 	resp, _ := rest.Send(request)
 	var poss []Post
-	fmt.Println(g.ResponseStructure(resp, &poss))
+	fmt.Println(g.ResponseStructure(resp, &poss, nil))
 
 	//POST Method
 	/*postr := Post{Title: "foo",

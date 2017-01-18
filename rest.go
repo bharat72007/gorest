@@ -173,7 +173,6 @@ func (client *Rest) Query(options ...interface{}) *Rest {
 
 func (client *Rest) Send(req *http.Request) (*http.Response, error) {
 	response, err := client.httpClient.Do(req)
-
 	if err != nil {
 		panic("Send request Failed")
 	}
@@ -185,8 +184,13 @@ func ResponseBodyString(response *http.Response, st interface{}) string {
 	return string(responsedata)
 }
 
-func ResponseStructure(response *http.Response, responsestruct interface{}) error {
-	err := json.NewDecoder(response.Body).Decode(responsestruct)
-	fmt.Println(responsestruct)
+func ResponseStructure(response *http.Response, responsestruct, errorstruct interface{}) error {
+	var err error
+	if code := response.StatusCode; 200 <= code && code <= 399 {
+		err = json.NewDecoder(response.Body).Decode(responsestruct)
+		fmt.Println(responsestruct)
+	} else {
+		err = json.NewDecoder(response.Body).Decode(errorstruct)
+	}
 	return err
 }
