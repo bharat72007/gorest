@@ -122,7 +122,7 @@ func (client *Rest) WithPayload(payload interface{}) {
 	client.payload = bytes.NewBuffer(b)
 }
 
-func (client *Rest) Request() (*http.Request, error) {
+func (client *Rest) Request(authoptions ...interface{}) (*http.Request, error) {
 	//Add all URI params to baseurl
 	if !strings.HasSuffix(client.baseurl, "/") {
 		client.baseurl = client.baseurl + "/"
@@ -156,6 +156,14 @@ func (client *Rest) Request() (*http.Request, error) {
 		}
 
 	}
+
+	for _, opt := range authoptions {
+		switch v := opt.(type) {
+		case *BasicAuth:
+			req.SetBasicAuth(v.Username, v.Password)
+		case *OAuth2: //TODO
+		}
+	}
 	return req, err
 }
 
@@ -188,7 +196,6 @@ func ResponseStructure(response *http.Response, responsestruct, errorstruct inte
 	var err error
 	if code := response.StatusCode; 200 <= code && code <= 399 {
 		err = json.NewDecoder(response.Body).Decode(responsestruct)
-		fmt.Println(responsestruct)
 	} else {
 		err = json.NewDecoder(response.Body).Decode(errorstruct)
 	}
