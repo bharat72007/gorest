@@ -171,7 +171,7 @@ func (client *Rest) Query(options ...interface{}) *Rest {
 	return client
 }
 
-func (client *Rest) Send(req *http.Request, successM, failureM interface{}) (*http.Response, error) {
+func (client *Rest) Send(req *http.Request) (*http.Response, error) {
 	response, err := client.httpClient.Do(req)
 
 	if err != nil {
@@ -181,14 +181,12 @@ func (client *Rest) Send(req *http.Request, successM, failureM interface{}) (*ht
 }
 
 func ResponseBodyString(response *http.Response, st interface{}) string {
-	json.NewDecoder(response.Body).Decode(st)
-	fmt.Println(st)
 	responsedata, _ := ioutil.ReadAll(response.Body)
 	return string(responsedata)
 }
 
-func ResponseStructure(response *http.Response, st interface{}) error {
-	err := json.NewDecoder(response.Body).Decode(st)
-	fmt.Println(st)
+func ResponseStructure(response *http.Response, responsestruct interface{}) error {
+	err := json.NewDecoder(response.Body).Decode(responsestruct)
+	fmt.Println(responsestruct)
 	return err
 }

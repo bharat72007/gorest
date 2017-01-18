@@ -17,7 +17,7 @@ func main() {
 	querystr := map[string]string{"postId": "1"}
 	request, _ := rest.WithHeader(g.ContentType, g.JsonContentType).Base("https://jsonplaceholder.typicode.com/").Path("comments").Query(querystr).Get().Request()
 	fmt.Println(request)
-	resp, _ := rest.Send(request, "", "")
+	resp, _ := rest.Send(request)
 	var poss []Post
 	fmt.Println(g.ResponseStructure(resp, &poss))
 
