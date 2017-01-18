@@ -2,13 +2,7 @@ package main
 
 import (
 	"fmt"
-	gorest "github.com/gorest"
-)
-
-const (
-	BASEURL         = "https://jsonplaceholder.typicode.com"
-	ContentType     = "Content-Type"
-	JSONContentType = "application/json"
+	g "github.com/gorest"
 )
 
 type Post struct {
@@ -19,11 +13,22 @@ type Post struct {
 }
 
 func main() {
-	postsucess1 := new(Post)
-	client1 := gorest.New()
-	request1, _ := client1.Base(BASEURL).Header(ContentType, JSONContentType).Path("posts").Path("1").Get().Request()
+	rest := g.New()
+	querystr := map[string]string{"postId": "1"}
+	request, _ := rest.AddHeader(g.ContentType, g.JsonContentType).BasePath("https://jsonplaceholder.typicode.com/").URIParam("comments").SetQuery(querystr).Get().Request()
+	fmt.Println(request)
+	resp, _ := rest.Send(request, "", "")
+	var poss []Post
+	fmt.Println(rest.ResponseStructure(resp, &poss))
 
-	err := client1.ResponseStruct(request1, postsucess1, nil)
-	fmt.Print(err)
-	fmt.Println(postsucess1)
+	//POST Method
+	/*postr := Post{Title: "foo",
+		Body:   "bar",
+		UserId: 1}
+	rest2 := g.New()
+	request2, _ := rest2.AddHeader(g.ContentType, g.JsonContentType).BasePath("http://jsonplaceholder.typicode.com/").URIParam("posts").Post(postr).Request()
+	fmt.Println(request2)
+	resp2, _ := rest2.Send(request2, "", "")
+	fmt.Println(rest.ResponseStructure(resp2, ""))
+	*/
 }

@@ -8,16 +8,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 )
 
 const (
 	ContentType     = "Content-Type"
 	JsonContentType = "application/json"
-	TextContentType = "application/text"
-	XmlContentType  = "application/xml"
-	timeOutSeconds  = 10
 )
 
 type Rest struct {
@@ -33,170 +29,120 @@ type Rest struct {
 
 func New() *Rest {
 	return &Rest{
-		httpClient:  http.Client{Timeout: time.Second * timeOutSeconds},
+		httpClient:  http.Client{Timeout: time.Second * 10},
 		headers:     make(map[string][]string),
 		queryvalues: make(url.Values),
 	}
 }
 
-func (client *Rest) Get() *Rest {
-	client.verb = "GET"
-	return client
+func (r *Rest) AddHeader(key, value string) *Rest {
+	r.headers.Add(key, value)
+	return r
 }
 
-func (client *Rest) Post(payload interface{}) *Rest {
-	client.verb = "POST"
-	if payload != nil {
-		client.addPayload(payload)
-	}
-	return client
-}
-
-func (client *Rest) Put(payload interface{}) *Rest {
-	client.verb = "PUT"
-	if payload != nil {
-		client.addPayload(payload)
-	}
-	return client
-}
-
-func (client *Rest) Delete(payload interface{}) *Rest {
-	client.verb = "DELETE"
-	if payload != nil {
-		client.addPayload(payload)
-	}
-	return client
-}
-
-func (client *Rest) Patch(payload interface{}) *Rest {
-	client.verb = "PATCH"
-	if payload != nil {
-		client.addPayload(payload)
-	}
-	return client
-}
-
-func (client *Rest) Head() *Rest {
-	client.verb = "HEAD"
-	return client
-}
-
-func (client *Rest) Option(payload interface{}) *Rest {
-	client.verb = "OPTIONS"
-	if payload != nil {
-		client.addPayload(payload)
-	}
-	return client
-}
-
-func (client *Rest) Copy() *Rest {
-	client.verb = "COPY"
-	return client
-}
-
-func (client *Rest) Path(param string) *Rest {
-	if client.baseurl == "" {
+func (r *Rest) URIParam(param string) *Rest {
+	if r.baseurl == "" {
 		panic("BASE URL Not Present")
-	} else if strings.Contains(param, "/") {
-		panic("Incorrect PATH Param")
 	}
-	client.uriparams = append(client.uriparams, param)
-	return client
+	r.uriparams = append(r.uriparams, param)
+	return r
 }
 
-func (client *Rest) Base(baseurl string) *Rest {
+func (r *Rest) BasePath(baseurl string) *Rest {
 	v, err := url.Parse(baseurl)
 	if err != nil {
 		panic("Url is incorrect")
 	}
-	client.baseurl = v.String()
-	return client
+	r.baseurl = v.String()
+	return r
 }
 
-func (client *Rest) Header(key, value string) *Rest {
-	client.headers.Add(key, value)
-	return client
+func (r *Rest) Get() *Rest {
+	r.verb = "GET"
+	return r
 }
 
-func (client *Rest) addPayload(payload interface{}) {
+func (r *Rest) addPayload(payload interface{}) {
 	var b []byte
 	b, _ = json.Marshal(payload)
-	client.payload = bytes.NewBuffer(b)
+	r.payload = bytes.NewBuffer(b)
 
 }
 
-func (client *Rest) Query(options ...interface{}) *Rest {
-	if len(options) > 0 {
-		qry, ok := options[0].(map[string]string)
-		if ok {
-			for k, v := range qry {
-				client.queryvalues.Set(k, v)
-			}
-		}
+func (r *Rest) Post(payload interface{}) *Rest {
+	r.verb = "POST"
+	if payload != nil {
+		r.addPayload(payload)
 	}
-	return client
+	return r
 }
 
-func (client *Rest) Request() (*http.Request, error) {
+func (r *Rest) Request() (*http.Request, error) {
 	//Add all URI params to baseurl
-	if !strings.HasSuffix(client.baseurl, "/") {
-		client.baseurl = client.baseurl + "/"
+	r.url = r.baseurl
+	for _, param := range r.uriparams {
+		r.url = r.url + param
 	}
+	v, err := url.Parse(r.url)
 
-	client.url = client.baseurl
-	params := strings.Join(client.uriparams, "/")
-	client.url = client.baseurl + params
-	v, err := url.Parse(client.url)
 	if err != nil {
 		panic("Complete URL is not correct")
 	}
 
-	client.url = v.String()
+	r.url = v.String()
 
 	//Adding Query String
 	var requrl url.URL
-	requrl.Path = client.url
-	requrl.RawQuery = client.queryvalues.Encode()
+	requrl.Path = r.url
+	requrl.RawQuery = r.queryvalues.Encode()
 	fmt.Println(requrl.String())
 
-	req, err := http.NewRequest(client.verb, requrl.String(), client.payload)
+	req, err := http.NewRequest(r.verb, requrl.String(), r.payload)
 	if err != nil {
 		panic("Request Object is not proper")
 	}
 
 	//Add headers to the Request
-	for key, values := range client.headers {
+	for key, values := range r.headers {
 		for _, value := range values {
 			req.Header.Add(key, value)
 		}
 
 	}
+
 	return req, err
 }
 
-func (client *Rest) Send(req *http.Request) (*http.Response, error) {
-	response, err := client.httpClient.Do(req)
+func (r *Rest) SetQuery(options ...interface{}) *Rest {
+	if len(options) > 0 {
+		qry, ok := options[0].(map[string]string)
+		if ok {
+			for k, v := range qry {
+				r.queryvalues.Set(k, v)
+			}
+		}
+	}
+	return r
+}
+
+func (r *Rest) Send(req *http.Request, successM, failureM interface{}) (*http.Response, error) {
+	response, err := r.httpClient.Do(req)
 
 	if err != nil {
 		panic("Send request Failed")
 	}
-	defer response.Body.Close()
-
 	return response, err
 }
 
-func (client *Rest) ResponseBodyString(response *http.Response) string {
+func (r *Rest) ResponseBodyString(response *http.Response, st interface{}) string {
+	json.NewDecoder(response.Body).Decode(st)
+	fmt.Println(st)
 	responsedata, _ := ioutil.ReadAll(response.Body)
 	return string(responsedata)
 }
 
-func (client *Rest) ResponseStruct(req *http.Request, success_struct, error_struct interface{}) error {
-	response, _ := client.Send(req)
-	if response == nil || response.Body == nil {
-		panic("Response is nil or Response Body is nil")
-	}
-	//If reponse status is 4XX or 5XX then we need to construct error structure else we need to construct sucess structure.
-	defer response.Body.Close()
-	return json.NewDecoder(response.Body).Decode(success_struct)
-
+func (r *Rest) ResponseStructure(response *http.Response, st interface{}) error {
+	err := json.NewDecoder(response.Body).Decode(st)
+	fmt.Println(st)
+	return err
 }
