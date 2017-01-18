@@ -174,46 +174,29 @@ func (client *Rest) Request() (*http.Request, error) {
 	return req, err
 }
 
-func (client *Rest) ResponseBodyString(response *http.Response) string {
-	responsedata, _ := ioutil.ReadAll(response.Body)
-	return string(responsedata)
-}
-
-func (client *Rest) Send(req *http.Request, successM, failureM interface{}) (*http.Response, error) {
+func (client *Rest) Send(req *http.Request) (*http.Response, error) {
 	response, err := client.httpClient.Do(req)
 
 	if err != nil {
 		panic("Send request Failed")
 	}
 	defer response.Body.Close()
-	if successM != nil || failureM != nil {
-		err = decodeResponseJSON(response, successM, failureM)
-	}
 
 	return response, err
 }
 
-func (client *Rest) Receive(successM, failureM interface{}) (*http.Response, error) {
-	req, err := client.Request()
-	if err != nil {
-		return nil, err
-	}
-	return client.Send(req, successM, failureM)
+func (client *Rest) ResponseBodyString(response *http.Response) string {
+	responsedata, _ := ioutil.ReadAll(response.Body)
+	return string(responsedata)
 }
 
-func decodeResponseJSON(resp *http.Response, successM, failureM interface{}) error {
-	if code := resp.StatusCode; 200 <= code && code <= 299 {
-		if successM != nil {
-			return decodeResponseBodyJSON(resp, successM)
-		}
-	} else {
-		if failureM != nil {
-			return decodeResponseBodyJSON(resp, failureM)
-		}
+func (client *Rest) ResponseStruct(req *http.Request, success_struct, error_struct interface{}) error {
+	response, _ := client.Send(req)
+	if response == nil || response.Body == nil {
+		panic("Response is nil or Response Body is nil")
 	}
-	return nil
-}
+	//If reponse status is 4XX or 5XX then we need to construct error structure else we need to construct sucess structure.
+	defer response.Body.Close()
+	return json.NewDecoder(response.Body).Decode(success_struct)
 
-func decodeResponseBodyJSON(resp *http.Response, v interface{}) error {
-	return json.NewDecoder(resp.Body).Decode(v)
 }
