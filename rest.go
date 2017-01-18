@@ -3,7 +3,6 @@ package gorest
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -29,6 +28,7 @@ type Rest struct {
 	url         string
 	queryvalues url.Values
 	payload     io.Reader
+	formdata    url.Values
 }
 
 func New() *Rest {
@@ -116,6 +116,16 @@ func (client *Rest) Copy() *Rest {
 	return client
 }
 
+func (client *Rest) WithFormData(data map[string]string) *Rest {
+	form := url.Values{}
+	for k, v := range data {
+		form.Add(k, v)
+	}
+	client.formdata = form
+	client.WithHeader("Content-Type", "application/x-www-form-urlencoded")
+	return client
+}
+
 func (client *Rest) WithPayload(payload interface{}) {
 	var b []byte
 	b, _ = json.Marshal(payload)
@@ -142,9 +152,12 @@ func (client *Rest) Request(authoptions ...interface{}) (*http.Request, error) {
 	var requrl url.URL
 	requrl.Path = client.url
 	requrl.RawQuery = client.queryvalues.Encode()
-	fmt.Println(requrl.String())
-
-	req, err := http.NewRequest(client.verb, requrl.String(), client.payload)
+	var req *http.Request
+	if client.formdata != nil {
+		req, err = http.NewRequest(client.verb, requrl.String(), strings.NewReader(client.formdata.Encode()))
+	} else {
+		req, err = http.NewRequest(client.verb, requrl.String(), client.payload)
+	}
 	if err != nil {
 		panic("Request Object is not proper")
 	}
