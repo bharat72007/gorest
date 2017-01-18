@@ -8,12 +8,16 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
 const (
 	ContentType     = "Content-Type"
 	JsonContentType = "application/json"
+	TextContentType = "application/text"
+	XmlContentType  = "application/xml"
+	timeOutSeconds  = 10
 )
 
 type Rest struct {
@@ -29,18 +33,18 @@ type Rest struct {
 
 func New() *Rest {
 	return &Rest{
-		httpClient:  http.Client{Timeout: time.Second * 10},
+		httpClient:  http.Client{Timeout: time.Second * timeOutSeconds},
 		headers:     make(map[string][]string),
 		queryvalues: make(url.Values),
 	}
 }
 
-func (r *Rest) AddHeader(key, value string) *Rest {
+func (r *Rest) WithHeader(key, value string) *Rest {
 	r.headers.Add(key, value)
 	return r
 }
 
-func (r *Rest) URIParam(param string) *Rest {
+func (r *Rest) Path(param string) *Rest {
 	if r.baseurl == "" {
 		panic("BASE URL Not Present")
 	}
@@ -48,7 +52,7 @@ func (r *Rest) URIParam(param string) *Rest {
 	return r
 }
 
-func (r *Rest) BasePath(baseurl string) *Rest {
+func (r *Rest) Base(baseurl string) *Rest {
 	v, err := url.Parse(baseurl)
 	if err != nil {
 		panic("Url is incorrect")
@@ -57,63 +61,105 @@ func (r *Rest) BasePath(baseurl string) *Rest {
 	return r
 }
 
-func (r *Rest) Get() *Rest {
-	r.verb = "GET"
-	return r
+func (client *Rest) Get() *Rest {
+	client.verb = "GET"
+	return client
 }
 
-func (r *Rest) addPayload(payload interface{}) {
+func (client *Rest) Post(payload interface{}) *Rest {
+	client.verb = "POST"
+	if payload != nil {
+		client.WithPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Put(payload interface{}) *Rest {
+	client.verb = "PUT"
+	if payload != nil {
+		client.WithPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Delete(payload interface{}) *Rest {
+	client.verb = "DELETE"
+	if payload != nil {
+		client.WithPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Patch(payload interface{}) *Rest {
+	client.verb = "PATCH"
+	if payload != nil {
+		client.WithPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Head() *Rest {
+	client.verb = "HEAD"
+	return client
+}
+
+func (client *Rest) Option(payload interface{}) *Rest {
+	client.verb = "OPTIONS"
+	if payload != nil {
+		client.WithPayload(payload)
+	}
+	return client
+}
+
+func (client *Rest) Copy() *Rest {
+	client.verb = "COPY"
+	return client
+}
+
+func (r *Rest) WithPayload(payload interface{}) {
 	var b []byte
 	b, _ = json.Marshal(payload)
 	r.payload = bytes.NewBuffer(b)
-
 }
 
-func (r *Rest) Post(payload interface{}) *Rest {
-	r.verb = "POST"
-	if payload != nil {
-		r.addPayload(payload)
-	}
-	return r
-}
-
-func (r *Rest) Request() (*http.Request, error) {
+func (client *Rest) Request() (*http.Request, error) {
 	//Add all URI params to baseurl
-	r.url = r.baseurl
-	for _, param := range r.uriparams {
-		r.url = r.url + param
+	if !strings.HasSuffix(client.baseurl, "/") {
+		client.baseurl = client.baseurl + "/"
 	}
-	v, err := url.Parse(r.url)
 
+	client.url = client.baseurl
+	params := strings.Join(client.uriparams, "/")
+	client.url = client.baseurl + params
+	v, err := url.Parse(client.url)
 	if err != nil {
 		panic("Complete URL is not correct")
 	}
 
-	r.url = v.String()
+	client.url = v.String()
 
 	//Adding Query String
 	var requrl url.URL
-	requrl.Path = r.url
-	requrl.RawQuery = r.queryvalues.Encode()
+	requrl.Path = client.url
+	requrl.RawQuery = client.queryvalues.Encode()
 	fmt.Println(requrl.String())
 
-	req, err := http.NewRequest(r.verb, requrl.String(), r.payload)
+	req, err := http.NewRequest(client.verb, requrl.String(), client.payload)
 	if err != nil {
 		panic("Request Object is not proper")
 	}
 
 	//Add headers to the Request
-	for key, values := range r.headers {
+	for key, values := range client.headers {
 		for _, value := range values {
 			req.Header.Add(key, value)
 		}
 
 	}
-
 	return req, err
 }
 
-func (r *Rest) SetQuery(options ...interface{}) *Rest {
+func (r *Rest) Query(options ...interface{}) *Rest {
 	if len(options) > 0 {
 		qry, ok := options[0].(map[string]string)
 		if ok {
