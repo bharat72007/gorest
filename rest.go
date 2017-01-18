@@ -39,26 +39,26 @@ func New() *Rest {
 	}
 }
 
-func (r *Rest) WithHeader(key, value string) *Rest {
-	r.headers.Add(key, value)
-	return r
+func (client *Rest) WithHeader(key, value string) *Rest {
+	client.headers.Add(key, value)
+	return client
 }
 
-func (r *Rest) Path(param string) *Rest {
-	if r.baseurl == "" {
+func (client *Rest) Path(param string) *Rest {
+	if client.baseurl == "" {
 		panic("BASE URL Not Present")
 	}
-	r.uriparams = append(r.uriparams, param)
-	return r
+	client.uriparams = append(client.uriparams, param)
+	return client
 }
 
-func (r *Rest) Base(baseurl string) *Rest {
+func (client *Rest) Base(baseurl string) *Rest {
 	v, err := url.Parse(baseurl)
 	if err != nil {
 		panic("Url is incorrect")
 	}
-	r.baseurl = v.String()
-	return r
+	client.baseurl = v.String()
+	return client
 }
 
 func (client *Rest) Get() *Rest {
@@ -116,10 +116,10 @@ func (client *Rest) Copy() *Rest {
 	return client
 }
 
-func (r *Rest) WithPayload(payload interface{}) {
+func (client *Rest) WithPayload(payload interface{}) {
 	var b []byte
 	b, _ = json.Marshal(payload)
-	r.payload = bytes.NewBuffer(b)
+	client.payload = bytes.NewBuffer(b)
 }
 
 func (client *Rest) Request() (*http.Request, error) {
@@ -159,20 +159,20 @@ func (client *Rest) Request() (*http.Request, error) {
 	return req, err
 }
 
-func (r *Rest) Query(options ...interface{}) *Rest {
+func (client *Rest) Query(options ...interface{}) *Rest {
 	if len(options) > 0 {
 		qry, ok := options[0].(map[string]string)
 		if ok {
 			for k, v := range qry {
-				r.queryvalues.Set(k, v)
+				client.queryvalues.Set(k, v)
 			}
 		}
 	}
-	return r
+	return client
 }
 
-func (r *Rest) Send(req *http.Request, successM, failureM interface{}) (*http.Response, error) {
-	response, err := r.httpClient.Do(req)
+func (client *Rest) Send(req *http.Request, successM, failureM interface{}) (*http.Response, error) {
+	response, err := client.httpClient.Do(req)
 
 	if err != nil {
 		panic("Send request Failed")
@@ -180,14 +180,14 @@ func (r *Rest) Send(req *http.Request, successM, failureM interface{}) (*http.Re
 	return response, err
 }
 
-func (r *Rest) ResponseBodyString(response *http.Response, st interface{}) string {
+func ResponseBodyString(response *http.Response, st interface{}) string {
 	json.NewDecoder(response.Body).Decode(st)
 	fmt.Println(st)
 	responsedata, _ := ioutil.ReadAll(response.Body)
 	return string(responsedata)
 }
 
-func (r *Rest) ResponseStructure(response *http.Response, st interface{}) error {
+func ResponseStructure(response *http.Response, st interface{}) error {
 	err := json.NewDecoder(response.Body).Decode(st)
 	fmt.Println(st)
 	return err
