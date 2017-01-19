@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+//All Constants which are related to headers.
+
 const (
 	ContentType     = "Content-Type"
 	JsonContentType = "application/json"
@@ -18,6 +20,9 @@ const (
 	XmlContentType  = "application/xml"
 	timeOutSeconds  = 10
 )
+
+// Rest Entity encapsulate Client properties and executes http requests.
+//It is implemented by *http.Client. End User can make use of Rest Entity to perform API invocations.
 
 type Rest struct {
 	httpClient  http.Client
@@ -31,6 +36,10 @@ type Rest struct {
 	formdata    url.Values
 }
 
+//New Rest Client can be initialized from Here.
+//Rest Client can be used to Invoke REST API's.
+//Example: New().Base("some-uri.com").Path(param).Get().Request()
+//Default client creation is ignored. //TODO
 func New() *Rest {
 	return &Rest{
 		httpClient:  http.Client{Timeout: time.Second * timeOutSeconds},
@@ -39,11 +48,15 @@ func New() *Rest {
 	}
 }
 
+//Function to attach Header to Client, which in turns used with Request.
+//Headers are added in the form of Key-Value Pair
 func (client *Rest) WithHeader(key, value string) *Rest {
 	client.headers.Add(key, value)
 	return client
 }
 
+//Path Params aka URI Params can be added to the Base URI.
+//Example: base_uri/{param1}/{param2} ==> Client.Base(BASEURI).Path(param1).Path(param2) etc...
 func (client *Rest) Path(param string) *Rest {
 	if client.baseurl == "" {
 		panic("BASE URL Not Present")
@@ -52,6 +65,8 @@ func (client *Rest) Path(param string) *Rest {
 	return client
 }
 
+//BASE URL can be attached to Rest Client
+//Example: Client.Base("https://some-service/app")
 func (client *Rest) Base(baseurl string) *Rest {
 	v, err := url.Parse(baseurl)
 	if err != nil {
@@ -61,11 +76,14 @@ func (client *Rest) Base(baseurl string) *Rest {
 	return client
 }
 
+//GET HTTP/HTTPS method, In case API request of the form GET, inorder to retrieve resources from server
 func (client *Rest) Get() *Rest {
 	client.verb = "GET"
 	return client
 }
 
+//POST HTTP/HTTPS method, In case API request of the form POST, in order to create new resource at server
+//In this method we can also attach Payload to be send to Server.
 func (client *Rest) Post(payload interface{}) *Rest {
 	client.verb = "POST"
 	if payload != nil {
@@ -74,6 +92,9 @@ func (client *Rest) Post(payload interface{}) *Rest {
 	return client
 }
 
+//PUT HTTP/HTTPS method, In case API request of the form PUT, in order to update the existing resource at server completely(except Primary Keys or Attributes which
+// identify resource uniquely)
+//In this method we can also attach updated Payload to be send to Server.
 func (client *Rest) Put(payload interface{}) *Rest {
 	client.verb = "PUT"
 	if payload != nil {
@@ -82,6 +103,8 @@ func (client *Rest) Put(payload interface{}) *Rest {
 	return client
 }
 
+//DELETE HTTP/HTTPS method, In case API request of the form delete, in order to delete the existing resource at server
+//In this method we can also attach updated Payload to be send to Server.
 func (client *Rest) Delete(payload ...interface{}) *Rest {
 	client.verb = "DELETE"
 	if payload != nil {
@@ -90,6 +113,8 @@ func (client *Rest) Delete(payload ...interface{}) *Rest {
 	return client
 }
 
+//PATCH HTTP/HTTPS method,In case API request of the form patch, in order to partial update the existing resource  properties at server
+//In this method we can attach the partial Payload fro updates.
 func (client *Rest) Patch(payload interface{}) *Rest {
 	client.verb = "PATCH"
 	if payload != nil {
@@ -98,11 +123,13 @@ func (client *Rest) Patch(payload interface{}) *Rest {
 	return client
 }
 
+//Head HTTP/HTTPS method, In case API request of the form Head, in order reterive Headers
 func (client *Rest) Head() *Rest {
 	client.verb = "HEAD"
 	return client
 }
 
+//OPTIONS HTTP/HTTPS method, In case API request of the form OPTIONS, which will provide all supported HTTP VERBS API.
 func (client *Rest) Option(payload interface{}) *Rest {
 	client.verb = "OPTIONS"
 	if payload != nil {
@@ -116,6 +143,7 @@ func (client *Rest) Copy() *Rest {
 	return client
 }
 
+//Construct the Form Data provided by User and attach it with REST Client.
 func (client *Rest) WithFormData(data map[string]string) *Rest {
 	form := url.Values{}
 	for k, v := range data {
@@ -126,12 +154,15 @@ func (client *Rest) WithFormData(data map[string]string) *Rest {
 	return client
 }
 
+//Construct Payload, to be used for POST/PUT/PATCH methods
 func (client *Rest) WithPayload(payload interface{}) {
 	var b []byte
 	b, _ = json.Marshal(payload)
 	client.payload = bytes.NewBuffer(b)
 }
 
+//From all the Rest Client Entity, HTTP request will be created. User can also provide the Authunication mode also, whether BASIC or OAUTH.
+//Example: BASIC Authencticaton BasicAuth{Username:"xyz", Password:"abcd"}
 func (client *Rest) Request(authoptions ...interface{}) (*http.Request, error) {
 	//Add all URI params to baseurl
 	if !strings.HasSuffix(client.baseurl, "/") {
@@ -180,6 +211,8 @@ func (client *Rest) Request(authoptions ...interface{}) (*http.Request, error) {
 	return req, err
 }
 
+//Query Paramters can be attached to URI.
+//Example: ?key1=val1&key2=val2 etc. Query paramters are added in the form of {Key,Value} Pair
 func (client *Rest) Query(options ...interface{}) *Rest {
 	if len(options) > 0 {
 		qry, ok := options[0].(map[string]string)
@@ -192,6 +225,8 @@ func (client *Rest) Query(options ...interface{}) *Rest {
 	return client
 }
 
+//After Request Construction, http.Request will be send to the Server for that http.Client.Do method is invoked.
+//From this API invokation, http Response and errors are being returned.
 func (client *Rest) Send(req *http.Request) (*http.Response, error) {
 	response, err := client.httpClient.Do(req)
 	if err != nil {
@@ -200,11 +235,14 @@ func (client *Rest) Send(req *http.Request) (*http.Response, error) {
 	return response, err
 }
 
+//Utility function not tied with specific Client interface, this method can be used to return response body as string
 func ResponseBodyString(response *http.Response, st interface{}) string {
 	responsedata, _ := ioutil.ReadAll(response.Body)
 	return string(responsedata)
 }
 
+//Utility function to decode response Body as response struct or error struct (JSON Object)
+//Unmarshalling process ==> To convert Response to respective JSON objects.
 func Response(response *http.Response, responsestruct, errorstruct interface{}) error {
 	var err error
 	if code := response.StatusCode; 200 <= code && code <= 399 {
