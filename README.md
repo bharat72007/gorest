@@ -98,7 +98,9 @@ rest.Base("https://api.example.com/").Path("param1").Query(query)
 
 ```
 So complete request URL will be
+
 https://api.example.com/{param1}?searchkey1=value1&searchkey2=value2&searchkey3=value3
+
 `NOTE`: Query is not a chaining method like Path, If user chain Query paramters user are directly replacing
 with the latest query
 
