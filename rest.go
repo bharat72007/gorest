@@ -82,7 +82,7 @@ func (client *Rest) Put(payload interface{}) *Rest {
 	return client
 }
 
-func (client *Rest) Delete(payload interface{}) *Rest {
+func (client *Rest) Delete(payload ...interface{}) *Rest {
 	client.verb = "DELETE"
 	if payload != nil {
 		client.WithPayload(payload)
@@ -205,7 +205,7 @@ func ResponseBodyString(response *http.Response, st interface{}) string {
 	return string(responsedata)
 }
 
-func ResponseStructure(response *http.Response, responsestruct, errorstruct interface{}) error {
+func Response(response *http.Response, responsestruct, errorstruct interface{}) error {
 	var err error
 	if code := response.StatusCode; 200 <= code && code <= 399 {
 		err = json.NewDecoder(response.Body).Decode(responsestruct)
