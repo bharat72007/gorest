@@ -1,4 +1,4 @@
-# Gorest (https://godoc.org/github.com/dghubble/sling)
+# Gorest (https://godoc.org/github.com/bharat72007/gorest)
 <!-- <img align="right" src="https://s3.amazonaws.com/dghubble/small-gopher-with-sling.png"> -->
 
 GoRest is a HTTP client library written in Go for composing and sending REST API requests.
