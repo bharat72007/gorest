@@ -1,5 +1,5 @@
 # Gorest 
-<img align="right" src="github.com/bharat72007/gorest/resource/img/groundhog_rest.jpeg"> 
+<img align="right" src="resource/img/groundhog_rest.jpeg"> 
 
 GoRest is a HTTP client library written in Go for composing and sending REST API requests.
 
