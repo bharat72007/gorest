@@ -237,15 +237,19 @@ func (client *Rest) Send(req *http.Request) (*http.Response, error) {
 
 //Utility function not tied with specific Client interface, this method can be used to return response body as string
 func ResponseBodyString(response *http.Response, st interface{}) string {
-	responsedata, _ := ioutil.ReadAll(response.Body)
-	return string(responsedata)
+	if response != nil {
+		responsedata, _ := ioutil.ReadAll(response.Body)
+		return string(responsedata)
+	}
+	return nil
 }
 
 //Utility function to decode response Body as response struct or error struct (JSON Object)
 //Unmarshalling process ==> To convert Response to respective JSON objects.
+//In case the response status is [200-299] then send the Success Response.
 func Response(response *http.Response, responsestruct, errorstruct interface{}) error {
 	var err error
-	if code := response.StatusCode; 200 <= code && code <= 399 {
+	if code := response.StatusCode; 200 <= code && code <= 299 {
 		err = json.NewDecoder(response.Body).Decode(responsestruct)
 	} else {
 		err = json.NewDecoder(response.Body).Decode(errorstruct)
