@@ -4,7 +4,7 @@
 GoRest is a HTTP client library written in Go for composing and sending REST API requests.
 
 GoRest encapsulates HTTP Request properties in Rest Client, which simplify the construction
-and invokation of REST API's.
+and invocation of REST API's.
 
 ### Features
 
@@ -12,9 +12,9 @@ and invokation of REST API's.
 * Extend BaseURI to various endpoints using Path
 * Attaching Headers to HTTP request
 * Send HTTP Request Body as JSON Payload
-* Set Query Paramters to Request
-* Recieve Response Body as string
-* Recieve success and failure responses in JSON format.
+* Set Query Parameters to Request
+* Receive Response Body as string
+* Receive success and failure responses in JSON format.
 * HTTP Verbs: Get/Post/Put/Patch/Head/Options/Delete
 
 ## Install
@@ -83,8 +83,8 @@ rest.Base("https://api.example.com/").Path("users").Path("1").WithHeader("User-A
 
 ### Query
 
-User can attach Query Paramters to Request URL.
-Query Paramters can be attached in one invokation, user just needs to provide all Query parameters
+User can attach Query Parameters to Request URL.
+Query Parameters can be attached in one invocation, user just needs to provide all Query parameters
 in {string: string} Map
 
 ```go
@@ -101,7 +101,7 @@ So complete request URL will be
 
 https://api.example.com/{param1}?searchkey1=value1&searchkey2=value2&searchkey3=value3
 
-`NOTE`: Query is not a chaining method like Path, If user chain Query paramters user are directly replacing
+`NOTE`: Query is not a chaining method like Path, If user chain Query parameters user are directly replacing
 with the latest query
 
 ```go
@@ -112,7 +112,7 @@ rest.Base("https://api.example.com/").Path("param1").Query(query1).Query(query2)
 query2 will be part of the request URL and not query1.
 
 ### Response
-Response can be seen in be,ow mentioned formats
+Response can be seen in below mentioned formats
 #### JSON Response
 HTTP Request can be send to Sever and based on that Response can be collected at various structures.
 Success Structure and Error Structure, If Error occurs then error message will be pumped in to Error Structure
@@ -150,7 +150,7 @@ Response(http.Response, interface{}, interface{})
 err := Response(response,post,errpost)
 
 ```
-From above invokation, post and errpost structures will be populated(based on success or error)
+From above invokation, post and errpost structures will be populated (based on success or error)
 
 
 #### Plain Body Response
@@ -168,7 +168,7 @@ content := ResponseBodyString(request)
 
 In Request which needs Body in the request, user needs to construct Payload first.
 Right now only JSON format Payload is supported.
-Lets create an structure which user needs to post
+Let’s create a structure which user needs to post
 
 ```go
 
@@ -187,7 +187,7 @@ rest.Base("https://api.example.com/").Path("param1").Post(post)
 
 ```
 
-Similarily for Partial Updates, user can create partial Payload and invoke Patch Verb.
+Similarly, for Partial Updates, user can create partial Payload and invoke Patch Verb.
 
 ``` go
 
@@ -219,6 +219,5 @@ rest.Base("https://api.example.com/").Query(query).Head().Request()
 
 ```
 
-## Motivation
 
 
