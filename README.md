@@ -1,5 +1,5 @@
-# Gorest (https://godoc.org/github.com/bharat72007/gorest)
-<!-- <img align="right" src="https://s3.amazonaws.com/dghubble/small-gopher-with-sling.png"> -->
+# Gorest 
+<img align="right" src="github.com/bharat72007/gorest/resource/img/groundhog_rest.jpeg"> 
 
 GoRest is a HTTP client library written in Go for composing and sending REST API requests.
 
@@ -27,7 +27,7 @@ Read [GoDoc](https://godoc.org/github.com/bharat72007/gorest)
 
 ## Usage
 
-Use GORest to set BASE URL, HTTP Verbs, Headers, Query Params, URI Prams or Request Payload
+Use GoRest to set BASE URL, HTTP Verbs, Headers, Query Params, URI Prams or Request Payload
 and create a HTTP request.
 
 ```go
@@ -62,7 +62,7 @@ req, err := rest.Base("https://api.example.com/").Path("users").Path("1").Reques
 
 ### Http Verbs
 
-Use `Get`, `Post`, `Put`, `Patch`, `Delete`, `Options or `Head` Http methods.
+Use `Get`, `Post`, `Put`, `Patch`, `Delete`, `Options` or `Head` Http methods.
 
 ```go
 
