@@ -218,3 +218,6 @@ rest.Base("https://api.example.com/").Path("param1").Post(payload).Request()
 rest.Base("https://api.example.com/").Query(query).Head().Request()
 
 ```
+
+### License
+MIT License
