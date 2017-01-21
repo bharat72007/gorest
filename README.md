@@ -220,4 +220,4 @@ rest.Base("https://api.example.com/").Query(query).Head().Request()
 ```
 
 ### License
-MIT License
+MIT License, See License File
