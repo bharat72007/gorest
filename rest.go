@@ -241,7 +241,7 @@ func ResponseBodyString(response *http.Response, st interface{}) string {
 		responsedata, _ := ioutil.ReadAll(response.Body)
 		return string(responsedata)
 	}
-	return nil
+	return ""
 }
 
 //Utility function to decode response Body as response struct or error struct (JSON Object)
