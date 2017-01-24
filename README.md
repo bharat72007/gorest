@@ -19,8 +19,11 @@ and invocation of REST API's.
 
 ## Install
 
-    go get github.com/bharat72007/gorest
-    go get -u (Update already installed package, using import reference in source code)
+    First time Installation
+    go get github.com/bharat72007/gorest 
+    
+    Get Already Installed updated Package
+    go get -u 
 
 ## Documentation
 
